@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Safe Local Malware Analysis (Synthetic)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="/styles.css" rel="stylesheet" />
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; }
+    header { background: #1f2937; color: #fff; padding: 12px 16px; }
+    header h1 { margin: 0 0 8px 0; font-size: 20px; }
+    nav button { margin-right: 8px; padding: 6px 10px; }
+    main { padding: 16px; }
+    .hidden { display: none; }
+    .row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+    pre { background: #f4f4f5; padding: 10px; border-radius: 6px; overflow: auto; }
+    .actions { margin: 10px 0; display: flex; gap: 8px; }
+    .note { color: #374151; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Safe Local Malware Analysis (Synthetic Only)</h1>
+    <nav>
+      <button data-page="home">Home</button>
+      <button data-page="samples">Samples</button>
+      <button data-page="static">Static Analysis</button>
+      <button data-page="deepstatic">Deep Static</button>
+      <button data-page="dynamic">Dynamic Analysis</button>
+      <button data-page="network">Network Log</button>
+      <button data-page="yara">YARA</button>
+      <button data-page="reports">Reports</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home" class="page">
+      <h2>Safety Checklist</h2>
+      <ul>
+        <li>Use a VM or snapshot; keep offline.</li>
+        <li>Only use bundled samples under <code>samples/</code>.</li>
+        <li>Execution runs in a worker with <strong>no network</strong>.</li>
+        <li>Timeouts and resource caps are enforced per run.</li>
+        <li>Any networking is to <code>127.0.0.1</code> only, inside the worker.</li>
+      </ul>
+      <label>
+        <input type="checkbox" id="confirmIsolation" />
+        I confirm I will run inside the isolated environment.
+      </label>
+      <p class="note">Execution buttons remain disabled until confirmed.</p>
+    </section>
+
+    <section id="samples" class="page hidden">
+      <h2>Samples</h2>
+      <div id="samplesList"></div>
+      <div class="actions">
+        <button id="compileDropper" disabled>Compile sim_dropper.c</button>
+        <button id="compileElfMimic" disabled>Compile sim_elf_mimic.c</button>
+      </div>
+      <h3>Artifacts</h3>
+      <pre id="artifacts"></pre>
+      <button id="downloadArtifacts" disabled>Download artifacts.zip</button>
+      <h3>Run Output</h3>
+      <pre id="runOutput"></pre>
+    </section>
+
+    <section id="static" class="page hidden">
+      <h2>Static Analysis</h2>
+      <div>
+        <label>Sample:
+          <select id="staticSample"></select>
+        </label>
+        <button id="runStatic">Analyze</button>
+        <input type="file" id="uploadFile" />
+        <button id="uploadBtn">Upload</button>
+        <select id="reportFormat">
+          <option value="html" selected>HTML</option>
+          <option value="pdf">PDF</option>
+          <option value="md">Markdown</option>
+        </select>
+        <button id="createReport">Create Report</button>
+      </div>
+      <pre id="staticOut"></pre>
+    </section>
+
+    <section id="deepstatic" class="page hidden">
+      <h2>Deep Static Analysis</h2>
+      <div>
+        <label>Sample:
+          <select id="deepSample"></select>
+        </label>
+        <button id="runDeepStatic">Analyze Deep</button>
+      </div>
+      <pre id="deepStaticOut"></pre>
+    </section>
+
+    <section id="dynamic" class="page hidden">
+      <h2>Dynamic Analysis</h2>
+      <p class="note">Runs synthetic samples in the worker (no network). Use the controls under Samples and Network tabs.</p>
+      <div class="actions">
+        <button id="runPacker" disabled>Run sim_packer.py</button>
+        <button id="runPersistence" disabled>Run sim_persistence.py</button>
+        <button id="runObfuscated" disabled>Run sim_obfuscated.py</button>
+      </div>
+      <pre id="dynamicOut"></pre>
+    </section>
+
+    <section id="network" class="page hidden">
+      <h2>Network Log (inside worker)</h2>
+      <div class="actions">
+        <button id="startSink" disabled>Start Sink in Worker</button>
+        <button id="runNetClient" disabled>Run sim_netclient.py</button>
+        <button id="refreshLog">Refresh Log</button>
+      </div>
+      <pre id="netLog"></pre>
+    </section>
+
+    <section id="yara" class="page hidden">
+      <h2>YARA</h2>
+      <p>Runs <code>yara/sim_rules.yar</code> against <code>samples/</code>. Falls back to simulation if YARA isn’t installed.</p>
+      <button id="runYara">Run YARA</button>
+      <pre id="yaraOut"></pre>
+    </section>
+
+    <section id="reports" class="page hidden">
+      <h2>Reports</h2>
+      <ul>
+        <li><a href="/analysis/static_template.md" download>Static Analysis Template</a></li>
+        <li><a href="/analysis/dynamic_template.md" download>Dynamic Analysis Template</a></li>
+        <li><a href="/analysis/report_sample.md" download>Sample Report</a></li>
+      </ul>
+      <button id="refreshReports">Refresh Reports</button>
+      <ul id="reportsList"></ul>
+    </section>
+  </main>
+
+  <script src="/main.js"></script>
+</body>
+</html>
+
+

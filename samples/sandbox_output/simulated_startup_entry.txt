@@ -1,0 +1,1 @@
+SIM_PERSISTENCE: pretend registry or cron entry here

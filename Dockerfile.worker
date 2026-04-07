@@ -1,0 +1,14 @@
+FROM python:3.11-slim
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends bash gcc make coreutils yara && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir pyinstaller
+
+RUN useradd -m worker_user
+USER worker_user
+
+WORKDIR /workspace/samples
+
+

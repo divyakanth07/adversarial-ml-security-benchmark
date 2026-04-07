@@ -1,0 +1,4 @@
+[pack] bytes_in=34 bytes_out=404 entropy=5.8953 dt_ms=2
+[unpack] recovered=291 ok=yes
+[pack] bytes_in=34 bytes_out=404 entropy=5.8775 dt_ms=2
+[unpack] recovered=291 ok=yes

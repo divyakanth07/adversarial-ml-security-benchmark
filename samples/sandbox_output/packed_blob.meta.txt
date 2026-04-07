@@ -1,0 +1,4 @@
+size_bytes=404
+entropy=5.8775
+unpacked_preview=SIM_PACKER: benign payload inside.
+̄4<[,CUQ

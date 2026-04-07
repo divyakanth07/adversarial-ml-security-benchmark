@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Adversarial ML Attack Toolkit — Security Model Benchmarking</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #263348;
+      --border: #334155;
+      --accent: #38bdf8;
+      --accent2: #f472b6;
+      --accent3: #a78bfa;
+      --success: #4ade80;
+      --warn: #facc15;
+      --danger: #f87171;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ─────────────────────────────────────────────────── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 1.2rem; color: var(--accent); letter-spacing: .5px; }
+    header .subtitle { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+    .badge { font-size: .7rem; padding: 3px 8px; border-radius: 999px; background: #0ea5e9; color: #fff; font-weight: 600; }
+    .badge-v2 { background: var(--accent3); }
+
+    /* ── Main ───────────────────────────────────────────────────── */
+    main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+    /* ── Scenario picker ─────────────────────────────────────────── */
+    .scenario-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      align-items: center;
+    }
+    .scenario-bar span { font-size: .75rem; color: var(--muted); margin-right: 4px; }
+    .scenario-btn {
+      padding: 6px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: .78rem;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .scenario-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .scenario-btn.active { border-color: var(--accent); background: rgba(56,189,248,.1); color: var(--accent); font-weight: 700; }
+    #scenarioDesc {
+      font-size: .75rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+      min-height: 18px;
+      font-style: italic;
+    }
+
+    /* ── Control bar ─────────────────────────────────────────────── */
+    .control-bar {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    .control-bar label { font-size: .75rem; color: var(--muted); display: block; margin-bottom: 4px; }
+    .control-bar select,
+    .control-bar input[type="number"] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: .85rem;
+    }
+    .constraint-toggle {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      font-size: .78rem;
+      color: var(--muted);
+      padding-top: 4px;
+    }
+    .constraint-toggle input[type="checkbox"] { accent-color: var(--accent3); width: 14px; height: 14px; cursor: pointer; }
+    .constraint-toggle.active { color: var(--accent3); }
+
+    /* ── Buttons ─────────────────────────────────────────────────── */
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: .85rem;
+      font-weight: 600;
+      transition: opacity .15s;
+    }
+    .btn:hover { opacity: .85; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn-primary   { background: var(--accent);  color: #0f172a; }
+    .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+    .btn-report    { background: var(--accent2); color: #0f172a; }
+    .btn-defend    { background: var(--success); color: #0f172a; }
+    .btn-sweep     { background: var(--accent3); color: #0f172a; }
+
+    /* ── Status bar ──────────────────────────────────────────────── */
+    #statusBar {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      font-size: .85rem;
+      color: var(--muted);
+    }
+    #statusBar.error   { border-left-color: var(--danger); }
+    #statusBar.success { border-left-color: var(--success); }
+
+    /* ── Metric cards ────────────────────────────────────────────── */
+    .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; }
+    .card .label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+    .card .value { font-size: 1.6rem; font-weight: 700; margin-top: 4px; }
+    .card .value.critical { color: var(--danger); }
+    .card .value.high     { color: var(--warn);   }
+    .card .value.moderate { color: var(--success); }
+    .card .value.neutral  { color: var(--accent);  }
+
+    /* ── Charts grid ─────────────────────────────────────────────── */
+    .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+    .chart-card.wide { grid-column: 1 / -1; }
+    .chart-card h3 { font-size: .85rem; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px; }
+    .chart-inner { width: 100%; height: 320px; }
+
+    /* ── Results table ───────────────────────────────────────────── */
+    .table-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 24px; }
+    .table-section h2 { font-size: 1rem; color: var(--accent); margin-bottom: 14px; }
+    table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    th { background: var(--bg); color: var(--muted); text-transform: uppercase; font-size: .68rem; letter-spacing: .5px; padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.03); }
+    .risk-critical { color: var(--danger); font-weight: 700; }
+    .risk-high     { color: var(--warn);   font-weight: 700; }
+    .risk-moderate { color: var(--success);font-weight: 700; }
+
+    /* ── Panel sections (sweep / defense / history) ──────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .panel h2 { font-size: 1rem; color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .panel-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 16px; }
+    .panel-controls label { font-size: .75rem; color: var(--muted); display: block; margin-bottom: 3px; }
+    .panel-controls select,
+    .panel-controls input { background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 10px; font-size: .82rem; }
+
+    /* Before/after comparison card */
+    .comparison-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px; }
+    .cmp-card { background: var(--surface2); border-radius: 8px; padding: 14px 16px; }
+    .cmp-card .cmp-label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+    .cmp-card .cmp-before { font-size: 1.4rem; font-weight: 700; color: var(--danger); }
+    .cmp-card .cmp-after  { font-size: 1.4rem; font-weight: 700; color: var(--success); }
+    .cmp-card .cmp-arrow  { font-size: 1rem; color: var(--muted); margin: 0 6px; }
+    .cmp-card .cmp-delta  { font-size: .78rem; color: var(--success); font-weight: 700; }
+    .cmp-card .cmp-bad    { color: var(--danger); }
+
+    /* History pills */
+    .history-summary { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .h-pill { font-size: .75rem; background: var(--surface2); border-radius: 6px; padding: 4px 10px; color: var(--muted); }
+
+    /* Constraint info band */
+    .constraint-info {
+      display: none;
+      background: rgba(167,139,250,.06);
+      border: 1px solid rgba(167,139,250,.3);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+      line-height: 1.7;
+    }
+    .constraint-info.visible { display: block; }
+    .constraint-info strong { color: var(--accent3); }
+
+    /* ── Real-World Targets panel ────────────────────────────────── */
+    .rw-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+    .rw-tab  { padding: 8px 20px; font-size: .82rem; cursor: pointer; color: var(--muted);
+               border-bottom: 2px solid transparent; transition: all .15s; }
+    .rw-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+    .rw-tab-panel  { display: none; }
+    .rw-tab-panel.active { display: block; }
+
+    .vt-result-bar {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+      background: var(--surface2); border-radius: 10px; padding: 16px 20px;
+    }
+    .vt-gauge { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    .vt-gauge.critical { color: var(--danger); }
+    .vt-gauge.high     { color: var(--warn); }
+    .vt-gauge.low      { color: var(--success); }
+    .vt-gauge-label    { font-size: .72rem; color: var(--muted); margin-top: 2px; }
+    .vt-engines-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+      gap: 8px; max-height: 260px; overflow-y: auto;
+    }
+    .vt-engine-chip {
+      font-size: .75rem; padding: 5px 10px; border-radius: 6px;
+      background: rgba(248,113,113,.1); border: 1px solid rgba(248,113,113,.3);
+      color: var(--danger);
+    }
+    .vt-engine-chip.suspicious {
+      background: rgba(250,204,21,.08); border-color: rgba(250,204,21,.3); color: var(--warn);
+    }
+
+    .hf-result-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 8px 16px; border-radius: 999px; font-size: .88rem; font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .hf-result-pill.malicious { background: rgba(248,113,113,.15); color: var(--danger); border: 1px solid rgba(248,113,113,.4); }
+    .hf-result-pill.benign    { background: rgba(74,222,128,.12);  color: var(--success); border: 1px solid rgba(74,222,128,.4);  }
+
+    .evasion-table { width: 100%; border-collapse: collapse; font-size: .8rem; margin-top: 12px; }
+    .evasion-table th { background: var(--bg); color: var(--muted); font-size: .68rem;
+      text-transform: uppercase; letter-spacing: .5px; padding: 7px 10px;
+      text-align: left; border-bottom: 1px solid var(--border); }
+    .evasion-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); }
+    .evasion-table tr:last-child td { border-bottom: none; }
+    .evaded-yes { color: var(--success); font-weight: 700; }
+    .evaded-no  { color: var(--danger);  font-weight: 700; }
+
+    /* ── AI Report ───────────────────────────────────────────────── */
+    .report-section { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .report-section h2 { font-size: 1rem; color: var(--accent); margin-bottom: 16px; }
+    #reportOutput {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px; font-size: .85rem; line-height: 1.7; color: var(--text);
+      white-space: pre-wrap; max-height: 500px; overflow-y: auto; min-height: 80px;
+    }
+    #reportOutput .placeholder { color: var(--muted); font-style: italic; }
+
+    /* ── Spinner ─────────────────────────────────────────────────── */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Tabs (for defense/sweep toggle) ─────────────────────────── */
+    .tab-row { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+    .tab { padding: 8px 18px; font-size: .82rem; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all .15s; }
+    .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 700; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Session bar ──────────────────────────────────────────────── */
+    .session-bar {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 16px; margin-bottom: 18px;
+      font-size: .8rem;
+    }
+    .session-bar .session-label { color: var(--muted); font-size: .72rem; letter-spacing: .03em; }
+    .session-code {
+      font-family: monospace; font-size: .88rem; color: var(--accent);
+      background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25);
+      border-radius: 6px; padding: 3px 10px; letter-spacing: .05em;
+      cursor: pointer; user-select: all;
+      transition: background .12s;
+    }
+    .session-code:hover { background: rgba(56,189,248,.18); }
+    .session-code.none { color: var(--muted); border-color: var(--border); background: none;
+                         font-size: .75rem; font-family: inherit; letter-spacing: 0;
+                         cursor: default; user-select: none; }
+    .session-code.none:hover { background: none; }
+    .session-bar .sep { color: var(--border); }
+    .btn-session {
+      padding: 5px 12px; font-size: .75rem; border-radius: 7px; cursor: pointer;
+      border: 1px solid var(--border); background: var(--surface2); color: var(--text);
+      transition: all .15s; white-space: nowrap;
+    }
+    .btn-session:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-session.btn-new { border-color: var(--success); color: var(--success); }
+    .btn-session.btn-new:hover { background: rgba(74,222,128,.1); }
+    .btn-session.btn-share { border-color: var(--accent3); color: var(--accent3); }
+    .btn-session.btn-share:hover { background: rgba(167,139,250,.1); }
+
+    /* ── Session modal ────────────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.65);
+      display: none; align-items: center; justify-content: center; z-index: 1000;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 28px 32px; width: 440px; max-width: 95vw; position: relative;
+    }
+    .modal-box h3 { font-size: 1rem; color: var(--accent); margin-bottom: 6px; }
+    .modal-box p  { font-size: .78rem; color: var(--muted); margin-bottom: 18px; line-height: 1.6; }
+    .modal-close {
+      position: absolute; top: 14px; right: 18px; font-size: 1.2rem;
+      cursor: pointer; color: var(--muted); background: none; border: none; line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-inp-row { display: flex; gap: 8px; margin-bottom: 16px; }
+    .modal-inp-row input {
+      flex: 1; font-size: .88rem; font-family: monospace; letter-spacing: .08em;
+      text-transform: lowercase;
+    }
+    .session-list { max-height: 220px; overflow-y: auto; }
+    .session-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 10px; border-radius: 8px; cursor: pointer;
+      transition: background .12s; gap: 8px;
+    }
+    .session-item:hover { background: var(--surface2); }
+    .session-item-code { font-family: monospace; font-size: .82rem; color: var(--accent); min-width: 80px; }
+    .session-item-meta { font-size: .72rem; color: var(--muted); flex: 1; }
+    .session-item-er   { font-size: .75rem; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Adversarial ML Attack Toolkit</h1>
+      <div class="subtitle">Security Model Benchmarking Dashboard · MCA Final Year Project</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="badge badge-v2">v2 · 5 Attacks</span>
+      <span class="badge">ART 1.20</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ── Session Bar ───────────────────────────────────────────── -->
+    <div class="session-bar">
+      <span class="session-label">SESSION</span>
+      <span id="sessionCodeDisplay" class="session-code none"
+            title="Click to copy code" onclick="copySessionCode()">no active session</span>
+      <span class="sep">·</span>
+      <button class="btn-session btn-new"   onclick="startNewSession()">＋ New Session</button>
+      <button class="btn-session"           onclick="loadLastSession()">⏮ Last Session</button>
+      <button class="btn-session"           onclick="openSessionModal()">🔗 Open Session</button>
+      <button class="btn-session btn-share" id="shareSessionBtn" onclick="shareSession()" style="display:none">⎘ Copy Link</button>
+    </div>
+
+    <!-- ── Threat Scenario Selector ──────────────────────────────── -->
+    <div class="scenario-bar">
+      <span>Threat Scenario:</span>
+      <button class="scenario-btn active" data-profile="custom">⚙ Custom</button>
+      <!-- JS populates the rest from /api/profiles -->
+    </div>
+    <div id="scenarioDesc"></div>
+
+    <!-- ── Control bar ───────────────────────────────────────────── -->
+    <div class="control-bar">
+      <div>
+        <label>Model</label>
+        <select id="modelSel">
+          <option value="all">All Models</option>
+          <option value="malware">Malware Classifier</option>
+          <option value="ids">IDS Classifier</option>
+          <option value="phishing">Phishing Classifier</option>
+        </select>
+      </div>
+      <div>
+        <label>Attack</label>
+        <select id="attackSel">
+          <option value="all">All Attacks</option>
+          <option value="fgsm">FGSM (white-box)</option>
+          <option value="hopskipjump">HopSkipJump (black-box)</option>
+          <option value="zoo">ZooAttack (black-box)</option>
+          <option value="cw">C&amp;W L2 (white-box)</option>
+          <option value="deepfool">DeepFool (white-box)</option>
+        </select>
+      </div>
+      <div>
+        <label>ε (epsilon)</label>
+        <input type="number" id="epsilonInp" value="0.05" min="0.001" max="1" step="0.005" style="width:90px" />
+      </div>
+      <label class="constraint-toggle" id="constraintToggle" title="Only perturb domain-realistic features (e.g. excludes PE headers for malware)">
+        <input type="checkbox" id="constraintChk" />
+        ⛓ Realistic Constraints
+      </label>
+      <button class="btn btn-primary"   id="runBtn">▶ Run Benchmark</button>
+      <button class="btn btn-secondary" id="refreshBtn">⟳ Refresh</button>
+      <button class="btn btn-report"    id="reportBtn">✦ AI Report</button>
+    </div>
+
+    <!-- Constraint info band (shown when checkbox active) -->
+    <div class="constraint-info" id="constraintInfo"></div>
+
+    <!-- ── Status bar ────────────────────────────────────────────── -->
+    <div id="statusBar"></div>
+
+    <!-- ── Summary cards ─────────────────────────────────────────── -->
+    <div class="cards" id="summaryCards">
+      <div class="card"><div class="label">Models Evaluated</div><div class="value neutral"  id="cardModels">—</div></div>
+      <div class="card"><div class="label">Attacks Run</div>     <div class="value neutral"  id="cardAttacks">—</div></div>
+      <div class="card"><div class="label">Max Evasion Rate</div><div class="value"           id="cardMaxEvasion">—</div></div>
+      <div class="card"><div class="label">Highest Risk Pair</div><div class="value" style="font-size:1rem" id="cardRiskPair">—</div></div>
+    </div>
+
+    <!-- ── Charts ────────────────────────────────────────────────── -->
+    <div class="charts-grid">
+      <div class="chart-card">
+        <h3>Evasion Rate Heatmap (Attack × Model)</h3>
+        <div class="chart-inner" id="heatmapDiv"></div>
+      </div>
+      <div class="chart-card">
+        <h3>Confidence Delta by Attack Type</h3>
+        <div class="chart-inner" id="lineChartDiv"></div>
+      </div>
+      <div class="chart-card wide">
+        <h3>Original vs Post-Attack Accuracy by Model</h3>
+        <div class="chart-inner" id="barChartDiv"></div>
+      </div>
+    </div>
+
+    <!-- ── Results table ─────────────────────────────────────────── -->
+    <div class="table-section">
+      <h2>Benchmark Results Table</h2>
+      <table id="resultsTable">
+        <thead>
+          <tr>
+            <th>Model</th><th>Attack</th>
+            <th>Orig. Acc</th><th>Post-Attack Acc</th>
+            <th>Evasion Rate</th><th>Conf. Δ</th>
+            <th>ε</th><th>Samples</th><th>Est. Queries</th><th>Risk</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody">
+          <tr><td colspan="10" style="color:var(--muted);text-align:center;padding:20px">No results yet — run a benchmark above.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ── Epsilon Sweep panel ────────────────────────────────────── -->
+    <div class="panel">
+      <h2>📈 Epsilon Sweep <span style="font-size:.75rem;color:var(--muted);font-weight:400">— how evasion rate scales with perturbation budget</span></h2>
+      <div class="panel-controls">
+        <div>
+          <label>Model</label>
+          <select id="sweepModelSel">
+            <option value="all">All Models</option>
+            <option value="malware">Malware</option>
+            <option value="ids">IDS</option>
+            <option value="phishing">Phishing</option>
+          </select>
+        </div>
+        <div>
+          <label>Attack</label>
+          <select id="sweepAttackSel">
+            <option value="fgsm">FGSM</option>
+            <option value="hopskipjump">HopSkipJump</option>
+            <option value="zoo">ZooAttack</option>
+            <option value="cw">C&amp;W L2</option>
+            <option value="deepfool">DeepFool</option>
+          </select>
+        </div>
+        <div>
+          <label>ε values (comma-separated)</label>
+          <input type="text" id="sweepEpsInp" value="0.01,0.05,0.1,0.2,0.3,0.5" style="width:220px" />
+        </div>
+        <button class="btn btn-sweep" id="sweepBtn">📈 Run Sweep</button>
+      </div>
+      <div class="chart-inner" id="sweepChartDiv" style="height:280px"></div>
+    </div>
+
+    <!-- ── Adversarial Training Defense panel ────────────────────── -->
+    <div class="panel">
+      <h2>🛡 Defense Mode <span style="font-size:.75rem;color:var(--muted);font-weight:400">— adversarial training before/after comparison</span></h2>
+      <div class="panel-controls">
+        <div>
+          <label>Model to Harden</label>
+          <select id="defModelSel">
+            <option value="malware">Malware Classifier</option>
+            <option value="ids">IDS Classifier</option>
+            <option value="phishing">Phishing Classifier</option>
+          </select>
+        </div>
+        <div>
+          <label>Attack for Training</label>
+          <select id="defAttackSel">
+            <option value="fgsm">FGSM</option>
+            <option value="hopskipjump">HopSkipJump</option>
+            <option value="zoo">ZooAttack</option>
+            <option value="cw">C&amp;W L2</option>
+            <option value="deepfool">DeepFool</option>
+          </select>
+        </div>
+        <div>
+          <label>ε (epsilon)</label>
+          <input type="number" id="defEpsInp" value="0.05" min="0.001" max="1" step="0.005" style="width:80px" />
+        </div>
+        <div>
+          <label>Augment Ratio</label>
+          <input type="number" id="defRatioInp" value="0.3" min="0.05" max="1.0" step="0.05" style="width:80px"
+                 title="Fraction of training set used to generate adversarial examples" />
+        </div>
+        <button class="btn btn-defend" id="defendBtn">🛡 Apply Defense</button>
+      </div>
+      <div class="comparison-grid" id="defenseComparison" style="display:none"></div>
+      <div class="chart-inner" id="defenseChartDiv" style="height:260px"></div>
+    </div>
+
+    <!-- ── Run History panel ─────────────────────────────────────── -->
+    <div class="panel">
+      <h2>🕒 Run History <span style="font-size:.75rem;color:var(--muted);font-weight:400">— evasion rate trend across benchmark runs</span></h2>
+      <div class="history-summary" id="historySummary"></div>
+      <div class="chart-inner" id="historyChartDiv" style="height:240px"></div>
+    </div>
+
+    <!-- ── Real-World Targets ────────────────────────────────────── -->
+    <div class="panel">
+      <h2>🌐 Real-World Targets
+        <span style="font-size:.75rem;color:var(--muted);font-weight:400">
+          — test against VirusTotal (70+ AV engines) and HuggingFace production security models
+        </span>
+      </h2>
+
+      <div class="rw-tabs">
+        <div class="rw-tab active" data-rwtab="vt">🛡 VirusTotal</div>
+        <div class="rw-tab"        data-rwtab="hf">🤗 HuggingFace Models</div>
+      </div>
+
+      <!-- VirusTotal tab -->
+      <div class="rw-tab-panel active" id="rwPanel-vt">
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.7">
+          Submit any URL or file SHA-256 hash to VirusTotal and see real-time results from
+          <strong style="color:var(--text)">70+ AV and security engines</strong>.
+          Requires a free API key from
+          <a href="https://virustotal.com" target="_blank" style="color:var(--accent)">virustotal.com</a>
+          added to your <code style="background:var(--bg);padding:1px 6px;border-radius:4px">VIRUSTOTAL_API_KEY</code> env var.
+        </div>
+        <div class="panel-controls" style="margin-bottom:14px">
+          <div style="flex:1;min-width:260px">
+            <label>URL to scan</label>
+            <input type="text" id="vtUrlInp" placeholder="https://example.com/suspicious-page"
+                   style="width:100%" />
+          </div>
+          <button class="btn btn-primary" id="vtUrlBtn" style="white-space:nowrap">🔍 Scan URL</button>
+        </div>
+        <div class="panel-controls">
+          <div style="flex:1;min-width:260px">
+            <label>File SHA-256 hash lookup</label>
+            <input type="text" id="vtHashInp" placeholder="e.g. 275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f"
+                   style="width:100%;font-family:monospace;font-size:.78rem" />
+          </div>
+          <button class="btn btn-secondary" id="vtHashBtn" style="white-space:nowrap">🔍 Lookup Hash</button>
+        </div>
+        <div id="vtResult" style="margin-top:16px"></div>
+      </div>
+
+      <!-- HuggingFace tab -->
+      <div class="rw-tab-panel" id="rwPanel-hf">
+        <div style="font-size:.8rem;color:var(--muted);margin-bottom:14px;line-height:1.7">
+          Test production HuggingFace security classifiers using documented URL obfuscation
+          techniques to demonstrate real-world adversarial evasion.
+          Optionally set <code style="background:var(--bg);padding:1px 6px;border-radius:4px">HF_TOKEN</code>
+          in your <code style="background:var(--bg);padding:1px 6px;border-radius:4px">.env</code>
+          for higher rate limits.
+        </div>
+        <div class="panel-controls" style="margin-bottom:14px">
+          <div>
+            <label>HF Security Model</label>
+            <select id="hfModelSel">
+              <option value="">Loading models…</option>
+            </select>
+          </div>
+          <div style="flex:1;min-width:260px">
+            <label>URL to classify</label>
+            <input type="text" id="hfUrlInp" placeholder="http://paypal-secure-verify.suspicious-login.com/account"
+                   style="width:100%" />
+          </div>
+          <button class="btn btn-primary"   id="hfClassifyBtn">🤗 Classify</button>
+          <button class="btn btn-sweep"     id="hfEvasionBtn">⚡ Run Evasion Demo</button>
+        </div>
+        <div style="margin-bottom:12px;font-size:.75rem;color:var(--muted)">
+          Sample phishing URLs:
+          <span id="hfSampleLinks" style="display:inline-flex;gap:6px;flex-wrap:wrap"></span>
+        </div>
+        <div id="hfResult" style="margin-top:4px"></div>
+      </div>
+    </div>
+
+    <!-- ── AI Report ──────────────────────────────────────────────── -->
+    <div class="report-section">
+      <h2>AI Threat Analysis Report</h2>
+      <div id="reportOutput"><span class="placeholder">Click "✦ AI Report" to produce a Claude-powered security analysis of the benchmark results.</span></div>
+    </div>
+
+  </main>
+
+  <!-- ── Session Modal ─────────────────────────────────────────── -->
+  <div class="modal-overlay" id="sessionModal" onclick="if(event.target===this)closeSessionModal()">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeSessionModal()">✕</button>
+      <h3>🔗 Open a Session</h3>
+      <p>Enter an 8-character session code, or pick a recent run from the list below.</p>
+      <div class="modal-inp-row">
+        <input type="text" id="sessionCodeInp" maxlength="8" placeholder="e.g. a3f2b1c9"
+               oninput="this.value=this.value.toLowerCase().replace(/[^0-9a-f]/g,'')"
+               onkeydown="if(event.key==='Enter')openSessionById($('sessionCodeInp').value)" />
+        <button class="btn btn-primary" onclick="openSessionById($('sessionCodeInp').value)">Open</button>
+      </div>
+      <div style="font-size:.72rem;color:var(--muted);margin-bottom:12px">Recent Sessions</div>
+      <div class="session-list" id="sessionList">
+        <div style="color:var(--muted);font-size:.78rem;padding:8px">Loading sessions…</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

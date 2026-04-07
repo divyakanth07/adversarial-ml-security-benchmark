@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/workspace/sink/sink_server.py", line 14, in <module>
+    s.bind((HOST, PORT))
+OSError: [Errno 98] Address already in use
+Traceback (most recent call last):
+  File "/workspace/sink/sink_server.py", line 14, in <module>
+    s.bind((HOST, PORT))
+OSError: [Errno 98] Address already in use

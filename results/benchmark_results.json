@@ -1,0 +1,134 @@
+{
+  "malware": {
+    "_error": "SklearnClassifier() got an unexpected keyword argument 'nb_classes'",
+    "fgsm": {
+      "model": "malware",
+      "attack": "fgsm",
+      "error": "FastGradientMethod requires an estimator derived from <class 'art.estimators.estimator.BaseEstimator'> and <class 'art.estimators.estimator.LossGradientsMixin'>, the provided classifier is an instance of <class 'art.estimators.classification.scikitlearn.ScikitlearnClassifier'> and is derived from (<class 'art.estimators.classification.classifier.ClassifierMixin'>, <class 'art.estimators.scikitlearn.ScikitlearnEstimator'>)."
+    },
+    "hopskipjump": {
+      "original_accuracy": 0.6,
+      "post_attack_accuracy": 0.4,
+      "evasion_rate": 1.0,
+      "confidence_delta": 0.0115,
+      "n_queries": 10200,
+      "model": "malware",
+      "attack": "hopskipjump",
+      "epsilon": null,
+      "n_samples": 20,
+      "constrained": false,
+      "via_surrogate": false
+    },
+    "zoo": {
+      "original_accuracy": 0.7,
+      "post_attack_accuracy": 0.6,
+      "evasion_rate": 0.0,
+      "confidence_delta": 0.013,
+      "n_queries": 25700,
+      "model": "malware",
+      "attack": "zoo",
+      "epsilon": null,
+      "n_samples": 10,
+      "constrained": false,
+      "via_surrogate": false
+    },
+    "cw": {
+      "model": "malware",
+      "attack": "cw",
+      "error": "CarliniL2Method requires an estimator derived from <class 'art.estimators.estimator.BaseEstimator'> and <class 'art.estimators.classification.classifier.ClassGradientsMixin'>, the provided classifier is an instance of <class 'art.estimators.classification.scikitlearn.ScikitlearnClassifier'> and is derived from (<class 'art.estimators.classification.classifier.ClassifierMixin'>, <class 'art.estimators.scikitlearn.ScikitlearnEstimator'>)."
+    },
+    "deepfool": {
+      "model": "malware",
+      "attack": "deepfool",
+      "error": "DeepFool requires an estimator derived from <class 'art.estimators.estimator.BaseEstimator'> and <class 'art.estimators.classification.classifier.ClassGradientsMixin'>, the provided classifier is an instance of <class 'art.estimators.classification.scikitlearn.ScikitlearnClassifier'> and is derived from (<class 'art.estimators.classification.classifier.ClassifierMixin'>, <class 'art.estimators.scikitlearn.ScikitlearnEstimator'>)."
+    }
+  },
+  "ids": {
+    "_error": "SklearnClassifier() got an unexpected keyword argument 'nb_classes'",
+    "fgsm": {
+      "model": "ids",
+      "attack": "fgsm",
+      "error": "FastGradientMethod requires an estimator derived from <class 'art.estimators.estimator.BaseEstimator'> and <class 'art.estimators.estimator.LossGradientsMixin'>, the provided classifier is an instance of <class 'art.estimators.classification.scikitlearn.ScikitlearnClassifier'> and is derived from (<class 'art.estimators.classification.classifier.ClassifierMixin'>, <class 'art.estimators.scikitlearn.ScikitlearnEstimator'>)."
+    },
+    "hopskipjump": {
+      "original_accuracy": 0.9,
+      "post_attack_accuracy": 0.1,
+      "evasion_rate": 1.0,
+      "confidence_delta": 0.3567,
+      "n_queries": 25500,
+      "model": "ids",
+      "attack": "hopskipjump",
+      "epsilon": null,
+      "n_samples": 50,
+      "constrained": false,
+      "via_surrogate": false
+    },
+    "zoo": {
+      "original_accuracy": 0.8667,
+      "post_attack_accuracy": 0.8,
+      "evasion_rate": 0.2222,
+      "confidence_delta": 0.0254,
+      "n_queries": 24900,
+      "model": "ids",
+      "attack": "zoo",
+      "epsilon": null,
+      "n_samples": 30,
+      "constrained": false,
+      "via_surrogate": false
+    },
+    "cw": {
+      "model": "ids",
+      "attack": "cw",
+      "error": "CarliniL2Method requires an estimator derived from <class 'art.estimators.estimator.BaseEstimator'> and <class 'art.estimators.classification.classifier.ClassGradientsMixin'>, the provided classifier is an instance of <class 'art.estimators.classification.scikitlearn.ScikitlearnClassifier'> and is derived from (<class 'art.estimators.classification.classifier.ClassifierMixin'>, <class 'art.estimators.scikitlearn.ScikitlearnEstimator'>)."
+    },
+    "deepfool": {
+      "model": "ids",
+      "attack": "deepfool",
+      "error": "DeepFool requires an estimator derived from <class 'art.estimators.estimator.BaseEstimator'> and <class 'art.estimators.classification.classifier.ClassGradientsMixin'>, the provided classifier is an instance of <class 'art.estimators.classification.scikitlearn.ScikitlearnClassifier'> and is derived from (<class 'art.estimators.classification.classifier.ClassifierMixin'>, <class 'art.estimators.scikitlearn.ScikitlearnEstimator'>)."
+    }
+  },
+  "phishing": {
+    "_error": "SklearnClassifier() got an unexpected keyword argument 'nb_classes'",
+    "fgsm": {
+      "model": "phishing",
+      "attack": "fgsm",
+      "error": "FastGradientMethod requires an estimator derived from <class 'art.estimators.estimator.BaseEstimator'> and <class 'art.estimators.estimator.LossGradientsMixin'>, the provided classifier is an instance of <class 'art.estimators.classification.scikitlearn.ScikitlearnClassifier'> and is derived from (<class 'art.estimators.classification.classifier.ClassifierMixin'>, <class 'art.estimators.scikitlearn.ScikitlearnEstimator'>)."
+    },
+    "hopskipjump": {
+      "original_accuracy": 0.76,
+      "post_attack_accuracy": 0.24,
+      "evasion_rate": 1.0,
+      "confidence_delta": 0.2947,
+      "n_queries": 25500,
+      "model": "phishing",
+      "attack": "hopskipjump",
+      "epsilon": null,
+      "n_samples": 50,
+      "constrained": false,
+      "via_surrogate": false
+    },
+    "zoo": {
+      "original_accuracy": 0.7667,
+      "post_attack_accuracy": 0.7333,
+      "evasion_rate": 0.1,
+      "confidence_delta": 0.0012,
+      "n_queries": 18300,
+      "model": "phishing",
+      "attack": "zoo",
+      "epsilon": null,
+      "n_samples": 30,
+      "constrained": false,
+      "via_surrogate": false
+    },
+    "cw": {
+      "model": "phishing",
+      "attack": "cw",
+      "error": "CarliniL2Method requires an estimator derived from <class 'art.estimators.estimator.BaseEstimator'> and <class 'art.estimators.classification.classifier.ClassGradientsMixin'>, the provided classifier is an instance of <class 'art.estimators.classification.scikitlearn.ScikitlearnClassifier'> and is derived from (<class 'art.estimators.classification.classifier.ClassifierMixin'>, <class 'art.estimators.scikitlearn.ScikitlearnEstimator'>)."
+    },
+    "deepfool": {
+      "model": "phishing",
+      "attack": "deepfool",
+      "error": "DeepFool requires an estimator derived from <class 'art.estimators.estimator.BaseEstimator'> and <class 'art.estimators.classification.classifier.ClassGradientsMixin'>, the provided classifier is an instance of <class 'art.estimators.classification.scikitlearn.ScikitlearnClassifier'> and is derived from (<class 'art.estimators.classification.classifier.ClassifierMixin'>, <class 'art.estimators.scikitlearn.ScikitlearnEstimator'>)."
+    }
+  }
+}

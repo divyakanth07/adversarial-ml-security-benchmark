@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Security Threat Report — Adversarial ML Toolkit</title>
+  <style>
+    /* ── Variables ──────────────────────────────────────────────── */
+    :root {
+      --bg:       #0f172a;
+      --surface:  #1e293b;
+      --surface2: #263348;
+      --border:   #334155;
+      --accent:   #38bdf8;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+      --danger:   #f87171;
+      --warn:     #facc15;
+      --success:  #4ade80;
+      --radius:   12px;
+    }
+
+    /* ── Reset ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ─────────────────────────────────────────────────── */
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,23,42,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--muted);
+      font-size: .85rem;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      transition: color .15s, border-color .15s;
+    }
+    .back-btn:hover { color: var(--text); border-color: var(--accent); text-decoration: none; }
+    .header-title { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .header-meta  { font-size: .75rem; color: var(--muted); margin-top: 2px; }
+    .print-btn {
+      padding: 7px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: .82rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background .15s;
+    }
+    .print-btn:hover { background: var(--surface2); }
+
+    /* ── Hero ───────────────────────────────────────────────────── */
+    .hero {
+      padding: 52px 28px 40px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero.danger  { background: radial-gradient(ellipse at top, rgba(248,113,113,.12) 0%, transparent 70%); }
+    .hero.warn    { background: radial-gradient(ellipse at top, rgba(250,204,21,.10) 0%, transparent 70%); }
+    .hero.success { background: radial-gradient(ellipse at top, rgba(74,222,128,.10) 0%, transparent 70%); }
+
+    .risk-badge {
+      display: inline-block;
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+      margin-bottom: 16px;
+      padding: 8px 28px;
+      border-radius: 999px;
+    }
+    .risk-badge.danger  { color: var(--danger);  background: rgba(248,113,113,.12); border: 2px solid rgba(248,113,113,.3); }
+    .risk-badge.warn    { color: var(--warn);    background: rgba(250,204,21,.10);  border: 2px solid rgba(250,204,21,.3);  }
+    .risk-badge.success { color: var(--success); background: rgba(74,222,128,.10);  border: 2px solid rgba(74,222,128,.3);  }
+
+    .hero-plain {
+      max-width: 680px;
+      margin: 0 auto 24px;
+      font-size: 1.05rem;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .hero-plain strong { color: #fff; }
+
+    .hero-counters {
+      display: inline-flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .hero-counter {
+      padding: 12px 28px;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .hero-counter:last-child { border-right: none; }
+    .hero-counter .hc-val {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .hero-counter .hc-val.danger  { color: var(--danger); }
+    .hero-counter .hc-val.warn    { color: var(--warn);   }
+    .hero-counter .hc-val.success { color: var(--success);}
+    .hero-counter .hc-label { font-size: .72rem; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .5px; }
+
+    /* ── Main layout ─────────────────────────────────────────────── */
+    main { max-width: 1200px; margin: 0 auto; padding: 32px 28px 64px; }
+
+    /* ── Metric cards row ────────────────────────────────────────── */
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+    .metric-card .mc-label { font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+    .metric-card .mc-val   { font-size: 1.9rem; font-weight: 800; margin: 6px 0 4px; }
+    .metric-card .mc-hint  { font-size: .75rem; color: var(--muted); }
+    .mc-val.danger  { color: var(--danger); }
+    .mc-val.warn    { color: var(--warn);   }
+    .mc-val.success { color: var(--success);}
+    .mc-val.neutral { color: var(--accent); }
+
+    /* ── Two-column row ──────────────────────────────────────────── */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+
+    /* ── Cards (generic section card) ───────────────────────────── */
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 26px;
+      margin-bottom: 24px;
+    }
+    .section-card h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .section-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #0f172a;
+      font-size: .8rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .plain-label {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+      font-style: italic;
+    }
+
+    /* Plain-English card */
+    .plain-card { border-left: 3px solid var(--accent); }
+    .plain-card h2 { color: var(--text); font-size: .95rem; margin-bottom: 12px; }
+    .plain-card p  { font-size: .88rem; color: var(--muted); margin-bottom: 10px; line-height: 1.75; }
+    .plain-card p:last-child { margin-bottom: 0; }
+    .plain-card strong { color: var(--text); }
+
+    /* Tech summary card */
+    .tech-card h2 { color: var(--text); font-size: .95rem; margin-bottom: 12px; }
+    .mini-table { width: 100%; border-collapse: collapse; font-size: .82rem; margin-bottom: 14px; }
+    .mini-table th { color: var(--muted); font-size: .7rem; text-transform: uppercase; letter-spacing: .4px; padding: 5px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+    .mini-table td { padding: 6px 8px; border-bottom: 1px solid rgba(51,65,85,.5); }
+    .mini-table tr:last-child td { border-bottom: none; }
+
+    /* ── Risk-coloured badges ────────────────────────────────────── */
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+    .badge.critical { background: rgba(248,113,113,.15); color: var(--danger); border: 1px solid rgba(248,113,113,.4); }
+    .badge.high     { background: rgba(250,204,21,.12);  color: var(--warn);   border: 1px solid rgba(250,204,21,.4);  }
+    .badge.moderate { background: rgba(74,222,128,.10);  color: var(--success);border: 1px solid rgba(74,222,128,.35); }
+
+    .risk-critical { color: var(--danger);  font-weight: 700; }
+    .risk-high     { color: var(--warn);    font-weight: 700; }
+    .risk-moderate { color: var(--success); font-weight: 700; }
+
+    /* ── Model cards row ─────────────────────────────────────────── */
+    .model-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .model-card {
+      border-radius: 10px;
+      padding: 20px;
+      text-align: center;
+      border: 2px solid transparent;
+    }
+    .model-card.critical { background: rgba(248,113,113,.07); border-color: rgba(248,113,113,.35); }
+    .model-card.high     { background: rgba(250,204,21,.07);  border-color: rgba(250,204,21,.35);  }
+    .model-card.moderate { background: rgba(74,222,128,.07);  border-color: rgba(74,222,128,.35);  }
+    .model-card .mc-name { font-size: .85rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+    .model-card .mc-er   { font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    .model-card .mc-er-label { font-size: .7rem; color: var(--muted); margin-top: 2px; margin-bottom: 8px; }
+    .model-card .mc-risk { font-size: .82rem; font-weight: 700; margin-bottom: 4px; }
+    .model-card .mc-worst { font-size: .72rem; color: var(--muted); }
+    .model-card.critical .mc-er { color: var(--danger);  }
+    .model-card.high     .mc-er { color: var(--warn);    }
+    .model-card.moderate .mc-er { color: var(--success); }
+
+    /* ── Attack cards row ────────────────────────────────────────── */
+    .attack-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .attack-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+    }
+    .attack-card .ac-name  { font-size: .95rem; font-weight: 700; color: var(--text); }
+    .attack-card .ac-type  { font-size: .72rem; color: var(--muted); margin-bottom: 10px; }
+    .attack-card .ac-er    { font-size: 1.7rem; font-weight: 800; }
+    .attack-card .ac-er-label { font-size: .7rem; color: var(--muted); margin-bottom: 6px; }
+    .attack-card .ac-blurb { font-size: .78rem; color: var(--muted); line-height: 1.6; margin-top: 10px; }
+    .attack-card.critical .ac-er { color: var(--danger);  }
+    .attack-card.high     .ac-er { color: var(--warn);    }
+    .attack-card.moderate .ac-er { color: var(--success); }
+
+    /* ── Report text ─────────────────────────────────────────────── */
+    .report-body {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 18px 20px;
+      font-size: .82rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      font-family: 'Consolas', 'Cascadia Code', monospace;
+      color: var(--text);
+      overflow-x: auto;
+    }
+    details summary {
+      cursor: pointer;
+      color: var(--muted);
+      font-size: .82rem;
+      margin-bottom: 10px;
+      user-select: none;
+    }
+    details summary:hover { color: var(--text); }
+
+    /* ── Results table ───────────────────────────────────────────── */
+    .results-table-wrap { overflow-x: auto; }
+    .results-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .82rem;
+    }
+    .results-table th {
+      background: var(--bg);
+      color: var(--muted);
+      font-size: .68rem;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      padding: 9px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    .results-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .results-table tr:last-child td { border-bottom: none; }
+    .results-table tr:hover td { background: rgba(255,255,255,.025); }
+
+    /* ── Glossary ────────────────────────────────────────────────── */
+    .glossary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .gloss-item {
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .gloss-item dt {
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .gloss-item dd {
+      font-size: .8rem;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    /* ── Recommendations checklist ───────────────────────────────── */
+    .rec-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .rec-item {
+      display: flex;
+      gap: 12px;
+      background: var(--surface2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      align-items: flex-start;
+    }
+    .rec-num {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--text);
+      font-size: .78rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .rec-body { font-size: .83rem; color: var(--muted); line-height: 1.65; }
+    .rec-body strong { color: var(--text); display: block; margin-bottom: 2px; }
+
+    /* ── Footer ──────────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 20px 28px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .75rem;
+    }
+    footer p + p { margin-top: 4px; }
+
+    /* ── Source pill ─────────────────────────────────────────────── */
+    .source-pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 700;
+    }
+    .source-pill.claude   { background: rgba(56,189,248,.15); color: var(--accent); border: 1px solid rgba(56,189,248,.4); }
+    .source-pill.fallback { background: rgba(148,163,184,.12); color: var(--muted); border: 1px solid var(--border); }
+
+    /* ── Proof-of-Concept section ────────────────────────────────── */
+    .poc-details {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      background: var(--surface2);
+    }
+    .poc-details summary {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+      flex-wrap: wrap;
+    }
+    .poc-details summary::-webkit-details-marker { display: none; }
+    .poc-details summary::before {
+      content: '▶';
+      font-size: .7rem;
+      color: var(--muted);
+      transition: transform .2s;
+      flex-shrink: 0;
+    }
+    .poc-details[open] summary::before { transform: rotate(90deg); }
+    .poc-details summary:hover { background: rgba(255,255,255,.03); }
+    .poc-name  { font-weight: 700; font-size: .92rem; color: var(--text); }
+    .poc-badge {
+      font-size: .68rem;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 999px;
+    }
+    .poc-badge.wb { background: rgba(248,113,113,.15); color: var(--danger); border: 1px solid rgba(248,113,113,.35); }
+    .poc-badge.bb { background: rgba(56,189,248,.12);  color: var(--accent); border: 1px solid rgba(56,189,248,.35);  }
+    .poc-hint  { font-size: .73rem; color: var(--muted); margin-left: auto; }
+    .poc-body  { padding: 0 18px 18px; }
+    .poc-theory {
+      font-size: .82rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      background: rgba(255,255,255,.03);
+      border-radius: 6px;
+      border-left: 3px solid var(--border);
+    }
+    .code-wrap { position: relative; }
+    .copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-size: .72rem;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+      z-index: 1;
+    }
+    .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .copy-btn.copied { color: var(--success); border-color: var(--success); }
+    .code-block {
+      background: #080f1e;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 18px;
+      font-family: 'Cascadia Code', 'Consolas', 'Fira Code', monospace;
+      font-size: .78rem;
+      line-height: 1.65;
+      color: #c9d1d9;
+      overflow-x: auto;
+      white-space: pre;
+      margin: 0;
+    }
+    .code-comment { color: #6a737d; font-style: italic; }
+    .code-import  { color: #79c0ff; }
+    .code-print   { color: #a5d6ff; }
+
+    .prereq-bar {
+      background: rgba(56,189,248,.06);
+      border: 1px solid rgba(56,189,248,.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      font-size: .82rem;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .prereq-bar code {
+      background: var(--bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: var(--text);
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: .8rem;
+    }
+
+    /* ── Print ───────────────────────────────────────────────────── */
+    @media print {
+      .page-header, .print-btn, .back-btn { display: none !important; }
+      body { background: #fff; color: #111; }
+      .section-card, .model-card, .attack-card, .gloss-item, .rec-item {
+        background: #f8f8f8 !important;
+        border-color: #ccc !important;
+      }
+      .hero { background: #f0f0f0 !important; }
+      .risk-badge, .mc-val, .model-card .mc-er, .attack-card .ac-er { color: #111 !important; }
+      .report-body { background: #f4f4f4; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Sticky header ──────────────────────────────────────────────── -->
+<header class="page-header">
+  <a href="/" class="back-btn">← Dashboard</a>
+  <div style="text-align:center; flex:1;">
+    <div class="header-title">Security Threat Analysis Report</div>
+    <div class="header-meta">
+      {% if source == 'claude' %}
+        <span class="source-pill claude">✦ Claude Haiku · {{ model_id }}</span>
+      {% else %}
+        <span class="source-pill fallback">⚙ Rule-based Analysis</span>
+      {% endif %}
+      &nbsp;·&nbsp; {{ timestamp }}
+    </div>
+  </div>
+  <button class="print-btn" onclick="window.print()">⎙ Print / PDF</button>
+</header>
+
+
+<!-- ── Hero: overall risk ─────────────────────────────────────────── -->
+<section class="hero {{ stats.risk_color }}">
+  <div class="risk-badge {{ stats.risk_color }}">
+    {{ stats.risk_emoji }} {{ stats.overall_risk }}
+  </div>
+
+  <p class="hero-plain">
+    {% if stats.n_tested > 0 %}
+      The tested AI security models show <strong>{{ stats.plain_risk }}</strong>.<br>
+      {{ stats.action }}
+    {% else %}
+      No benchmark data found. Run a benchmark from the dashboard first, then generate a report.
+    {% endif %}
+  </p>
+
+  {% if stats.n_tested > 0 %}
+  <div class="hero-counters">
+    <div class="hero-counter">
+      <div class="hc-val danger">{{ stats.n_critical }}</div>
+      <div class="hc-label">Critical</div>
+    </div>
+    <div class="hero-counter">
+      <div class="hc-val warn">{{ stats.n_high }}</div>
+      <div class="hc-label">High</div>
+    </div>
+    <div class="hero-counter">
+      <div class="hc-val success">{{ stats.n_moderate }}</div>
+      <div class="hc-label">Moderate</div>
+    </div>
+    <div class="hero-counter">
+      <div class="hc-val neutral">{{ stats.n_tested }}</div>
+      <div class="hc-label">Total tests</div>
+    </div>
+  </div>
+  {% endif %}
+</section>
+
+
+<main>
+
+  <!-- ── Key metric cards ──────────────────────────────────────── -->
+  {% if stats.n_tested > 0 %}
+  <div class="metric-row">
+    <div class="metric-card">
+      <div class="mc-label">Highest Evasion Rate</div>
+      <div class="mc-val {{ stats.risk_color }}">{{ stats.max_er_pct }}</div>
+      <div class="mc-hint">The worst single attack–model combination</div>
+    </div>
+    <div class="metric-card">
+      <div class="mc-label">Average Evasion Rate</div>
+      <div class="mc-val neutral">{{ stats.avg_er_pct }}</div>
+      <div class="mc-hint">Averaged across all {{ stats.n_tested }} test results</div>
+    </div>
+    <div class="metric-card">
+      <div class="mc-label">Tests Completed</div>
+      <div class="mc-val neutral">{{ stats.n_tested }}</div>
+      <div class="mc-hint">Model × Attack combinations evaluated</div>
+    </div>
+    <div class="metric-card">
+      <div class="mc-label">Most Vulnerable</div>
+      <div class="mc-val" style="font-size:1.1rem; color:var(--text);">{{ stats.worst_label }}</div>
+      <div class="mc-hint">Highest evasion rate pairing</div>
+    </div>
+  </div>
+  {% endif %}
+
+
+  <!-- ── Plain-English guide  +  Technical mini-tables ─────────── -->
+  <div class="two-col">
+
+    <div class="section-card plain-card">
+      <h2>📖 Plain English Guide</h2>
+      <p>
+        These AI models were stress-tested to see whether a hacker could
+        <strong>trick them into making the wrong decision</strong> — for example, disguising
+        malware so it goes undetected, or making a fake website look legitimate.
+      </p>
+      <p>
+        We ran <strong>{{ stats.n_tested }} test scenarios</strong> using {{ stats.model_cards | length }}
+        AI security systems and {{ stats.attack_cards | length }} attack techniques.
+      </p>
+      {% if stats.n_critical > 0 %}
+      <p>
+        <span class="badge critical">{{ stats.n_critical }} CRITICAL</span>
+        In these cases attackers succeeded <strong>more than 50% of the time</strong>. Think of a
+        security lock that can be picked every other try — that's a serious problem.
+      </p>
+      {% endif %}
+      {% if stats.n_high > 0 %}
+      <p>
+        <span class="badge high">{{ stats.n_high }} HIGH</span>
+        In these cases attackers succeeded <strong>20–50% of the time</strong>. The lock works,
+        but a determined attacker can crack it.
+      </p>
+      {% endif %}
+      {% if stats.n_moderate > 0 %}
+      <p>
+        <span class="badge moderate">{{ stats.n_moderate }} MODERATE</span>
+        In these cases attackers succeeded <strong>fewer than 20% of the time</strong>. The system
+        holds up well, but monitoring is still a good idea.
+      </p>
+      {% endif %}
+    </div>
+
+    <div class="section-card tech-card">
+      <h2>⚙ Technical At-a-Glance</h2>
+
+      {% if stats.model_cards %}
+      <table class="mini-table">
+        <thead><tr><th>Model</th><th>Max Evasion</th><th>Risk</th></tr></thead>
+        <tbody>
+        {% for c in stats.model_cards %}
+          <tr>
+            <td>{{ c.label }}</td>
+            <td>{{ c.max_er_pct }}</td>
+            <td class="risk-{{ c.risk_class }}">{{ c.risk_emoji }} {{ c.risk }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      {% if stats.attack_cards %}
+      <table class="mini-table">
+        <thead><tr><th>Attack</th><th>Avg Evasion</th><th>Risk</th></tr></thead>
+        <tbody>
+        {% for c in stats.attack_cards %}
+          <tr>
+            <td>{{ c.label }} <span style="color:var(--muted);font-size:.7rem">({{ c.atype }})</span></td>
+            <td>{{ c.avg_er_pct }}</td>
+            <td class="risk-{{ c.risk_class }}">{{ c.risk_emoji }} {{ c.risk }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+
+  </div>
+
+
+  <!-- ── Section 1: Executive Summary ──────────────────────────── -->
+  {% if sections.executive_summary %}
+  <div class="section-card">
+    <h2><span class="section-num">1</span> Executive Summary</h2>
+    <div class="plain-label">The big picture — what the tests found overall</div>
+    <div class="report-body">{{ sections.executive_summary }}</div>
+  </div>
+  {% endif %}
+
+
+  <!-- ── Section 2: Per-Model Vulnerability ────────────────────── -->
+  <div class="section-card">
+    <h2><span class="section-num">2</span> Per-Model Vulnerability Analysis</h2>
+    <div class="plain-label">Which AI systems are weakest, and why</div>
+
+    {% if stats.model_cards %}
+    <div class="model-row">
+      {% for c in stats.model_cards %}
+      <div class="model-card {{ c.risk_class }}">
+        <div class="mc-name">{{ c.label }}</div>
+        <div class="mc-er">{{ c.max_er_pct }}</div>
+        <div class="mc-er-label">Max Evasion Rate</div>
+        <div class="mc-risk">{{ c.risk_emoji }} {{ c.risk }}</div>
+        <div class="mc-worst">Worst attack: {{ c.worst_attack }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if sections.vulnerability_analysis %}
+    <details open>
+      <summary>▾ Detailed analysis</summary>
+      <div class="report-body">{{ sections.vulnerability_analysis }}</div>
+    </details>
+    {% endif %}
+  </div>
+
+
+  <!-- ── Section 3: Attack Effectiveness ──────────────────────── -->
+  <div class="section-card">
+    <h2><span class="section-num">3</span> Attack Effectiveness Comparison</h2>
+    <div class="plain-label">Which attack methods were most dangerous — and what kind of attacker they represent</div>
+
+    {% if stats.attack_cards %}
+    <div class="attack-row">
+      {% for c in stats.attack_cards %}
+      <div class="attack-card {{ c.risk_class }}">
+        <div class="ac-name">{{ c.label }}</div>
+        <div class="ac-type">{{ c.atype }} attack</div>
+        <div class="ac-er">{{ c.avg_er_pct }}</div>
+        <div class="ac-er-label">Avg Evasion Rate · max {{ c.max_er_pct }}</div>
+        <span class="badge {{ c.risk_class }}">{{ c.risk_emoji }} {{ c.risk }}</span>
+        <div class="ac-blurb">{{ c.blurb }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if sections.attack_comparison %}
+    <details>
+      <summary>▾ Detailed analysis</summary>
+      <div class="report-body">{{ sections.attack_comparison }}</div>
+    </details>
+    {% endif %}
+  </div>
+
+
+  <!-- ── Section 4: Recommendations ───────────────────────────── -->
+  <div class="section-card">
+    <h2><span class="section-num">4</span> Defensive Recommendations</h2>
+    <div class="plain-label">What should be done next to improve security</div>
+
+    <!-- Static readable checklist — always shown for non-technical readers -->
+    <ul class="rec-list" style="margin-bottom:20px">
+      <li class="rec-item">
+        <div class="rec-num">1</div>
+        <div class="rec-body">
+          <strong>Adversarial Training</strong>
+          Retrain the models using examples of adversarial inputs. Even one retraining round can cut the evasion rate by 30–60%. This is the single highest-impact fix.
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">2</div>
+        <div class="rec-body">
+          <strong>Input Sanitisation (Feature Squeezing)</strong>
+          Apply pre-processing to incoming data before it reaches the AI — similar to how a spell-checker smooths out typos. This disrupts the tiny, carefully crafted changes attackers rely on.
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">3</div>
+        <div class="rec-body">
+          <strong>Use Multiple Independent Models (Ensemble)</strong>
+          If one AI can be fooled, a second structurally different AI probably can't. Running several models in parallel and requiring agreement raises the bar for attackers significantly.
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">4</div>
+        <div class="rec-body">
+          <strong>Confidence Thresholding</strong>
+          Flag any prediction the AI is not very sure about (below ~75% confidence) and route it to a human reviewer. Attack-crafted inputs often cause the AI to hedge — this catches them.
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">5</div>
+        <div class="rec-body">
+          <strong>Anomaly Detection on Inputs</strong>
+          Monitor incoming data for unusual statistical patterns. Adversarial examples frequently look subtly "off" compared to normal inputs — an anomaly detector acts as a first-line filter.
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">6</div>
+        <div class="rec-body">
+          <strong>API Rate-Limiting & Query Monitoring</strong>
+          Black-box attacks (HopSkipJump, ZooAttack) require sending hundreds of queries to probe the AI. Detect and throttle clients making unusually high prediction volumes.
+        </div>
+      </li>
+      <li class="rec-item">
+        <div class="rec-num">7</div>
+        <div class="rec-body">
+          <strong>Quarterly Re-Benchmarking</strong>
+          Threats evolve. Schedule adversarial benchmarks every quarter with updated attack parameters to ensure defences remain effective over time.
+        </div>
+      </li>
+    </ul>
+
+    {% if sections.recommendations %}
+    <details>
+      <summary>▾ Full AI-generated recommendations</summary>
+      <div class="report-body">{{ sections.recommendations }}</div>
+    </details>
+    {% endif %}
+  </div>
+
+
+  <!-- ── Full benchmark results table ──────────────────────────── -->
+  {% if stats.table_rows %}
+  <div class="section-card">
+    <h2>📊 Full Benchmark Results</h2>
+    <div class="plain-label">Every model × attack combination with exact numbers</div>
+    <div class="results-table-wrap">
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>Attack</th>
+            <th>Original Accuracy</th>
+            <th>Post-Attack Accuracy</th>
+            <th>Evasion Rate</th>
+            <th>Confidence Δ</th>
+            <th>ε</th>
+            <th>Samples</th>
+            <th>Risk Level</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in stats.table_rows %}
+          <tr>
+            <td>{{ row.model }}</td>
+            <td>{{ row.attack }}</td>
+            <td>{{ row.original_accuracy }}</td>
+            <td>{{ row.post_attack_accuracy }}</td>
+            <td><strong>{{ row.evasion_rate }}</strong></td>
+            <td>{{ row.confidence_delta }}</td>
+            <td>{{ row.epsilon }}</td>
+            <td>{{ row.n_samples }}</td>
+            <td class="risk-{{ row.risk_class }}">{{ row.risk_emoji }} {{ row.risk }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+
+  <!-- ── Proof-of-Concept manual scripts ──────────────────────── -->
+  {% if stats.poc_attacks %}
+  <div class="section-card">
+    <h2>🧪 Proof of Concept — Manual Attack Scripts</h2>
+    <div class="plain-label">
+      Runnable Python scripts that replicate exactly what this toolkit automates.
+      Use these to demonstrate each attack manually from a terminal — great for walkthroughs and presentations.
+    </div>
+
+    <div class="prereq-bar">
+      <strong style="color:var(--accent)">Prerequisites</strong> &nbsp;·&nbsp;
+      install once: <code>pip install adversarial-robustness-toolbox scikit-learn joblib numpy</code>
+      &nbsp;·&nbsp;
+      already installed inside Docker &nbsp;·&nbsp;
+      run <code>python train_models.py</code> first to generate model files &nbsp;·&nbsp;
+      run scripts from the project root directory
+    </div>
+
+    {% for poc in stats.poc_attacks %}
+    <details class="poc-details">
+      <summary>
+        <span class="poc-name">{{ poc.label }}</span>
+        <span class="poc-badge {{ poc.attack_type_class }}">{{ poc.attack_type }}</span>
+        <span style="font-size:.75rem;color:var(--muted)">{{ poc.theory }}</span>
+        <span class="poc-hint">ε&nbsp;=&nbsp;{{ poc.epsilon }} &nbsp;·&nbsp; {{ poc.n_samples }}&nbsp;samples &nbsp;·&nbsp; {{ poc.model_label }}</span>
+      </summary>
+
+      <div class="poc-body">
+        <div class="poc-theory">
+          <strong style="color:var(--text)">What this script does:</strong>
+          loads <code>{{ poc.model_file }}</code>, reproduces the original train/test split
+          (seed&nbsp;42), runs the <strong>{{ poc.label }}</strong> attack, then prints the evasion
+          rate and accuracy drop — the same numbers shown in the benchmark table above.
+          {% if poc.attack_type == 'White-box' %}
+          A <strong>surrogate SGDClassifier</strong> is trained first because sklearn tree models
+          have no gradient access.
+          {% else %}
+          No model internals are needed — this is a genuine <strong>black-box attack</strong>.
+          {% endif %}
+        </div>
+
+        <div class="code-wrap">
+          <button class="copy-btn" onclick="copyCode(this)" title="Copy to clipboard">📋 Copy</button>
+          <pre class="code-block" data-attack="{{ poc.key }}">{{ poc.code_html | safe }}</pre>
+        </div>
+
+        <div style="margin-top:10px;font-size:.75rem;color:var(--muted)">
+          💡 <strong>Swap the loader</strong> to test a different model:
+          <code style="background:var(--bg);padding:1px 6px;border-radius:4px;color:var(--text)">from loaders.ember_loader import load_ember_data</code> (malware) &nbsp;·&nbsp;
+          <code style="background:var(--bg);padding:1px 6px;border-radius:4px;color:var(--text)">from loaders.nslkdd_loader import load_nslkdd_data</code> (IDS) &nbsp;·&nbsp;
+          <code style="background:var(--bg);padding:1px 6px;border-radius:4px;color:var(--text)">from loaders.phishing_loader import load_phishing_data</code> (phishing)
+        </div>
+      </div>
+    </details>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+
+  <!-- ── Full AI report text (collapsed by default) ────────────── -->
+  {% if report %}
+  <div class="section-card">
+    <h2>📄 Full AI Analysis Text</h2>
+    <div class="plain-label">
+      The complete report as produced by
+      {% if source == 'claude' %}Claude Haiku{% else %}the rule-based engine{% endif %}
+    </div>
+    <details>
+      <summary>▾ Show full report</summary>
+      <div class="report-body" style="margin-top:10px">{{ report }}</div>
+    </details>
+  </div>
+  {% endif %}
+
+
+  <!-- ── Glossary ───────────────────────────────────────────────── -->
+  <div class="section-card">
+    <h2>📚 Glossary</h2>
+    <div class="plain-label">Technical terms explained in plain language</div>
+    <div class="glossary-grid">
+      <div class="gloss-item">
+        <dt>Evasion Rate</dt>
+        <dd>The percentage of attack attempts that successfully fooled the AI. A rate of 60% means 6 out of every 10 adversarial inputs went undetected. Higher is worse.</dd>
+      </div>
+      <div class="gloss-item">
+        <dt>Adversarial Attack</dt>
+        <dd>A specially crafted input — e.g., a slightly modified malware file or network packet — designed to exploit blind spots in an AI model and cause it to make wrong predictions.</dd>
+      </div>
+      <div class="gloss-item">
+        <dt>FGSM (White-box)</dt>
+        <dd>Fast Gradient Sign Method. Requires full access to the AI's internals. Crafts attacks in a single mathematical step. Represents a worst-case insider or reverse-engineering threat.</dd>
+      </div>
+      <div class="gloss-item">
+        <dt>HopSkipJump (Black-box)</dt>
+        <dd>An attack that needs only the model's predicted label — no internals required. It iteratively walks toward the AI's decision boundary. Realistic for any attacker querying a cloud API.</dd>
+      </div>
+      <div class="gloss-item">
+        <dt>ZooAttack (Black-box)</dt>
+        <dd>A patient, gradient-free black-box attack that probes the model using prediction probabilities. Slow but broadly applicable — represents a persistent, well-resourced external attacker.</dd>
+      </div>
+      <div class="gloss-item">
+        <dt>Confidence Delta (Δ)</dt>
+        <dd>How much the AI's confidence score drops after an attack. A large negative delta means the attack made the AI very uncertain — a sign the input was successfully perturbed.</dd>
+      </div>
+      <div class="gloss-item">
+        <dt>White-box vs Black-box</dt>
+        <dd>White-box: the attacker knows the model's weights and architecture. Black-box: the attacker can only observe inputs and outputs. Black-box is more realistic in the real world.</dd>
+      </div>
+      <div class="gloss-item">
+        <dt>Adversarial Training</dt>
+        <dd>Retraining the AI model using adversarial examples so it learns to recognise and correctly classify them. The most effective known defence against adversarial attacks.</dd>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+
+<!-- ── Footer ──────────────────────────────────────────────────────── -->
+<footer>
+  <p>Adversarial ML Attack Toolkit &nbsp;·&nbsp; MCA Final Year Project</p>
+  <p>Report generated {{ timestamp }}
+    &nbsp;·&nbsp;
+    {% if source == 'claude' %}
+      Analysis by <strong style="color:var(--accent)">Claude Haiku ({{ model_id }})</strong>
+    {% else %}
+      Analysis by <strong>rule-based engine</strong> (Claude API unavailable)
+    {% endif %}
+  </p>
+</footer>
+
+<script>
+function copyCode(btn) {
+  const pre  = btn.closest('.code-wrap').querySelector('.code-block');
+  const text = pre.innerText;           // innerText strips HTML tags cleanly
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    // Fallback for environments without clipboard API
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+</script>
+</body>
+</html>

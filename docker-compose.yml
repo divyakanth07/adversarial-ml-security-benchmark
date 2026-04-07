@@ -1,0 +1,25 @@
+# Adversarial ML Attack Toolkit — Docker Compose
+# One-command launch: docker compose up --build
+#
+# Volumes keep trained models and results across container restarts.
+
+services:
+  adversarial-toolkit:
+    container_name: adversarial_ml_toolkit
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - VIRUSTOTAL_API_KEY=${VIRUSTOTAL_API_KEY}
+      - HF_TOKEN=${HF_TOKEN}
+      - FLASK_ENV=production
+    volumes:
+      - ./models:/app/models
+      - ./results:/app/results
+      - ./data:/app/data
+    restart: unless-stopped
+
+

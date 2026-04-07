@@ -1,0 +1,3 @@
+message=SUM: Simulated IOCs for demo.
+urls=http://example.local/update,https://intranet.local/api
+ips=10.0.0.5,127.0.0.1

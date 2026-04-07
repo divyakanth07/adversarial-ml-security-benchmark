@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Security Research Labs — Select a Mode</title>
+  <style>
+    :root {
+      --bg:       #0f172a;
+      --surface:  #1e293b;
+      --surface2: #263348;
+      --border:   #334155;
+      --accent:   #38bdf8;
+      --accent2:  #f472b6;
+      --accent3:  #a78bfa;
+      --success:  #4ade80;
+      --warn:     #facc15;
+      --danger:   #f87171;
+      --text:     #e2e8f0;
+      --muted:    #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* ── Header ─────────────────────────────────────────────── */
+    .header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+    .header .eyebrow {
+      font-size: .72rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: clamp(1.6rem, 4vw, 2.6rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent3) 60%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.15;
+      margin-bottom: 12px;
+    }
+    .header .sub {
+      font-size: .9rem;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* ── Cards ───────────────────────────────────────────────── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
+      gap: 28px;
+      justify-content: center;
+      width: 100%;
+      max-width: 780px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 36px 30px 30px;
+      cursor: pointer;
+      text-decoration: none;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, border-color .2s, box-shadow .2s;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity .2s;
+      border-radius: inherit;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,.4);
+    }
+    .card:hover::before { opacity: 1; }
+
+    /* ART Lab — cyan glow */
+    .card.art { border-color: rgba(56,189,248,.3); }
+    .card.art::before { background: radial-gradient(ellipse at top left, rgba(56,189,248,.07) 0%, transparent 70%); }
+    .card.art:hover { border-color: rgba(56,189,248,.7); box-shadow: 0 20px 60px rgba(56,189,248,.15); }
+
+    /* Malware Lab — purple glow */
+    .card.mal { border-color: rgba(167,139,250,.3); }
+    .card.mal::before { background: radial-gradient(ellipse at top left, rgba(167,139,250,.07) 0%, transparent 70%); }
+    .card.mal:hover { border-color: rgba(167,139,250,.7); box-shadow: 0 20px 60px rgba(167,139,250,.15); }
+
+    .card-icon {
+      font-size: 2.8rem;
+      line-height: 1;
+    }
+    .card-tag {
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 999px;
+      display: inline-block;
+      width: fit-content;
+    }
+    .card.art  .card-tag { background: rgba(56,189,248,.12);  color: var(--accent);  border: 1px solid rgba(56,189,248,.3); }
+    .card.mal  .card-tag { background: rgba(167,139,250,.12); color: var(--accent3); border: 1px solid rgba(167,139,250,.3); }
+
+    .card h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.2;
+    }
+    .card.art h2 { color: var(--accent); }
+    .card.mal h2 { color: var(--accent3); }
+
+    .card p {
+      font-size: .82rem;
+      color: var(--muted);
+      line-height: 1.7;
+      flex: 1;
+    }
+
+    .card-features {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .chip {
+      font-size: .68rem;
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .card-cta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      font-size: .8rem;
+      font-weight: 600;
+    }
+    .card.art  .card-cta { color: var(--accent); }
+    .card.mal  .card-cta { color: var(--accent3); }
+    .cta-arrow { font-size: 1.1rem; transition: transform .2s; }
+    .card:hover .cta-arrow { transform: translateX(4px); }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    .footer {
+      margin-top: 56px;
+      font-size: .72rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.9;
+    }
+    .footer a { color: var(--muted); text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="eyebrow">MCA Final Year Project · Security Research Platform</div>
+    <h1>Security Research Labs</h1>
+    <p class="sub">
+      Choose a lab environment. Both share the same session system and run on the same server.
+    </p>
+  </div>
+
+  <div class="cards">
+
+    <!-- ART Lab -->
+    <a class="card art" id="artCard" href="/art">
+      <div class="card-icon">🧠</div>
+      <div class="card-tag">ART Lab</div>
+      <h2>Adversarial ML Attack Toolkit</h2>
+      <p>
+        Benchmark real security classifiers against FGSM, HopSkipJump, ZooAttack,
+        C&amp;W L2 and DeepFool. Visualise evasion rates, run VirusTotal + HuggingFace
+        real-world tests, and generate AI threat reports.
+      </p>
+      <div class="card-features">
+        <span class="chip">5 Attacks</span>
+        <span class="chip">3 Models</span>
+        <span class="chip">VirusTotal</span>
+        <span class="chip">HuggingFace</span>
+        <span class="chip">AI Reports</span>
+        <span class="chip">Sessions</span>
+      </div>
+      <div class="card-cta">
+        Open ART Lab <span class="cta-arrow">→</span>
+      </div>
+    </a>
+
+    <!-- Malware Lab -->
+    <a class="card mal" href="/malware">
+      <div class="card-icon">🛡️</div>
+      <div class="card-tag">Malware Lab</div>
+      <h2>Safe Malware Analysis Lab</h2>
+      <p>
+        Analyse synthetic malware samples in a sandboxed environment.
+        Run static &amp; deep static analysis, Shannon entropy, YARA rules,
+        dynamic execution, network capture, and generate analysis reports.
+      </p>
+      <div class="card-features">
+        <span class="chip">Static Analysis</span>
+        <span class="chip">YARA</span>
+        <span class="chip">Dynamic Run</span>
+        <span class="chip">Network Sim</span>
+        <span class="chip">Reports</span>
+        <span class="chip">8 Samples</span>
+      </div>
+      <div class="card-cta">
+        Open Malware Lab <span class="cta-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    Both labs run on the same Flask server &nbsp;·&nbsp;
+    Port 5000 &nbsp;·&nbsp; Educational use only — all samples are synthetic
+  </div>
+
+  <script>
+    // If URL has ?session=<id>, carry it over to the ART Lab link
+    const params = new URLSearchParams(window.location.search);
+    const sid    = params.get('session');
+    if (sid) {
+      document.getElementById('artCard').href = '/art?session=' + encodeURIComponent(sid);
+    }
+  </script>
+</body>
+</html>

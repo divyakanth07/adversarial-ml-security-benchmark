@@ -1,0 +1,13 @@
+/* Minimal styles extracted for cache-friendly static serving */
+body { font-family: Arial, sans-serif; margin: 0; }
+header { background: #1f2937; color: #fff; padding: 12px 16px; }
+header h1 { margin: 0 0 8px 0; font-size: 20px; }
+nav button { margin-right: 8px; padding: 6px 10px; }
+main { padding: 16px; }
+.hidden { display: none; }
+.row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+pre { background: #f4f4f5; padding: 10px; border-radius: 6px; overflow: auto; }
+.actions { margin: 10px 0; display: flex; gap: 8px; }
+.note { color: #374151; }
+
+

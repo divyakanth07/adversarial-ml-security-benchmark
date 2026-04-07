@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Analysis Report: sim_netclient.py</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;margin:20px;} h1{margin-top:0;} table{border-collapse:collapse;width:100%;max-width:900px;} th,td{border:1px solid #ddd;padding:8px;text-align:left;} th{background:#f3f4f6;width:180px;} ul{padding-left:18px;} .section{margin-top:20px;} .muted{color:#6b7280;}</style>
+</head>
+<body>
+<h1>Analysis Report: sim_netclient.py</h1>
+<div class="muted">Generated: 20251027_171353 UTC</div>
+<div class="section"><h2>Details</h2><table><tr><th>Kind</th><td>static</td></tr><tr><th>File Type</th><td>Script (shebang)</td></tr><tr><th>Size</th><td>369 bytes</td></tr><tr><th>Entropy</th><td>5.0457</td></tr><tr><th>MD5</th><td>df917d7eb713bdf61770dcf893bdbcb1</td></tr><tr><th>SHA1</th><td>927e709326206d83e7925aaad4442d709dd95036</td></tr><tr><th>SHA256</th><td>77505d6f7dea4419fa42e44c1634e8fcfc570f7ca7a351479242cf447c47c611</td></tr></table></div>
+<div class="section"><h2>Indicators</h2><ul><li><strong>URLs</strong>: None</li><li><strong>IPs</strong>: 127.0.0.1</li><li><strong>Emails</strong>: None</li></ul></div>
+<div class="section"><h2>Strings (preview)</h2><ul><li>#!/usr/bin/env python3</li><li>import socket</li><li>HOST = &quot;127.0.0.1&quot;</li><li>PORT = 9009</li><li>msg = b&quot;SIM_NET: hello sink from worker.&quot;</li><li>with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:</li><li>    try:</li><li>        s.connect((HOST, PORT))</li><li>        s.sendall(msg)</li><li>        print(&quot;SIM_NET: sent message&quot;)</li><li>    except Exception as e:</li><li>        print(&quot;SIM_NET: connection failed:&quot;, e)</li></ul></div>
+</body>
+</html>

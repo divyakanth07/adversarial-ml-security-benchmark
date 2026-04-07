@@ -1,0 +1,67 @@
+{
+  "eps_values": [
+    0.01,
+    0.05,
+    0.1,
+    0.2,
+    0.3,
+    0.5
+  ],
+  "attack": "fgsm",
+  "curves": {
+    "malware": {
+      "evasion_rates": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "post_accuracies": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "ids": {
+      "evasion_rates": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "post_accuracies": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "phishing": {
+      "evasion_rates": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ],
+      "post_accuracies": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  }
+}
